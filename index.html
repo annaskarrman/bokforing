@@ -416,7 +416,10 @@
     <div class="list-panel">
       <div class="list-header">
         <span>Transaktioner</span>
-        <span id="txCount">0 poster</span>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span id="txCount">0 poster</span>
+          <button class="reset-btn" onclick="refreshData()" id="refreshBtn" style="padding:6px 12px;font-size:0.75rem;">↻ Uppdatera</button>
+        </div>
       </div>
       <div id="txList"></div>
     </div>
@@ -585,6 +588,16 @@
         <button class="del-btn" onclick="deleteTransaction(${t.id})" title="Ta bort">×</button>
       </div>
     `).join('');
+  }
+
+  async function refreshData() {
+    const btn = document.getElementById('refreshBtn');
+    btn.textContent = '↻ Laddar...';
+    btn.disabled = true;
+    transactions = await dbLoad();
+    render();
+    btn.textContent = '↻ Uppdatera';
+    btn.disabled = false;
   }
 
   // ── Init ─────────────────────────────────────────────────────────
