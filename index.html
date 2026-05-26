@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="apple-touch-icon" href="apple-touch-icon-pg.png">
 <title>Palmgrens garage</title>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -210,9 +210,13 @@
 
   .summary {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
     margin-bottom: 20px;
+  }
+
+  .s-balance-wrap {
+    grid-column: 1 / -1;
   }
 
   .summary-card {
@@ -339,9 +343,10 @@
 
   .period-label {
     font-size: 0.72rem;
-    color: rgba(255,255,255,0.6);
+    color: #666666;
     font-style: italic;
     font-weight: 400;
+    display: block;
   }
 
   @media (max-width: 800px) {
@@ -349,9 +354,7 @@
     .summary { grid-template-columns: 1fr 1fr; }
     header { padding: 16px 20px; }
   }
-</style>
 
-<style>
   .login-screen {
     position: fixed;
     inset: 0;
@@ -433,7 +436,7 @@
     <div class="login-title">Bokföring — Logga in</div>
     <div class="login-field">
       <label>Lösenord</label>
-      <input type="password" id="passwordInput" placeholder="Ange lösenord..." onkeydown="if(event.key==='Enter') checkPassword()" />
+      <input type="password" id="passwordInput" placeholder="Ange lösenord..." onkeydown="if(event.key==='Enter') checkPassword()" style="font-size:1.1rem;padding:16px;border:2px solid #aaaaaa;border-radius:4px;width:100%;background:#ffffff;color:#1a1a1a;" />
     </div>
     <button class="login-btn" onclick="checkPassword()">Logga in</button>
     <div class="login-error" id="loginError"></div>
@@ -497,19 +500,21 @@
         <div class="s-label">Utgifter</div>
         <div class="s-amount" id="totalExpense">0 kr</div>
       </div>
-      <div class="summary-card s-balance" id="balanceCard">
-        <div class="s-label">Resultat <span class="period-label" id="periodLabel"></span></div>
-        <div class="s-amount" id="balance">0 kr</div>
+      <div class="s-balance-wrap">
+        <div class="summary-card s-balance" id="balanceCard">
+          <div class="s-label">Resultat<br><span class="period-label" id="periodLabel"></span></div>
+          <div class="s-amount" id="balance">0 kr</div>
+        </div>
       </div>
     </div>
 
     <!-- TRANSACTION LIST -->
     <div class="list-panel">
-      <div class="list-header">
-        <span>Transaktioner</span>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span id="txCount">0 poster</span>
-          <button class="reset-btn" onclick="refreshData()" id="refreshBtn" style="padding:6px 12px;font-size:0.75rem;">↻ Uppdatera</button>
+      <div class="list-header" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <span>Transaktioner: <span id="txCount">0</span></span>
+        <div style="display:flex;gap:8px;">
+          <button onclick="refreshData()" id="refreshBtn" title="Uppdatera" style="width:32px;height:32px;font-size:2rem;background:rgba(255,255,255,0.15);border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">🔄</button>
+          <button onclick="exportCSV()" title="Exportera till Excel" style="width:32px;height:32px;font-size:0.9rem;font-weight:900;color:white;border:none;border-radius:4px;background:#1d6f42;cursor:pointer;font-family:Arial,sans-serif;">X</button>
         </div>
       </div>
       <div id="txList"></div>
@@ -644,6 +649,7 @@
 
   // ── Rendera ──────────────────────────────────────────────────────
   function render() {
+    if (sessionStorage.getItem('pg_auth') !== 'true') return;
     const filtered = getFiltered();
     const from = document.getElementById('filterFrom').value;
     const to   = document.getElementById('filterTo').value;
@@ -655,7 +661,7 @@
     document.getElementById('totalIncome').textContent  = fmt(incomeTotal);
     document.getElementById('totalExpense').textContent = fmt(expenseTotal);
     document.getElementById('balance').textContent      = (balance >= 0 ? '+' : '') + fmt(balance);
-    document.getElementById('txCount').textContent      = filtered.length + ' poster';
+    document.getElementById('txCount').textContent = filtered.length;
 
     let periodStr = (!from && !to) ? 'innevarande år'
       : `${from ? formatDate(from) : '–'} → ${to ? formatDate(to) : '–'}`;
@@ -681,13 +687,36 @@
     `).join('');
   }
 
+  function exportCSV() {
+    if (transactions.length === 0) { alert('Inga transaktioner att exportera.'); return; }
+
+    const rows = [['Datum', 'Typ', 'Beskrivning', 'Belopp (kr)']];
+    const sorted = [...transactions].sort((a, b) => a.tx_date.localeCompare(b.tx_date));
+
+    sorted.forEach(t => {
+      rows.push([
+        t.tx_date.slice(0, 10),
+        t.type === 'income' ? 'Inkomst' : 'Utgift',
+        t.description,
+        parseFloat(t.amount).toFixed(2).replace('.', ',')
+      ]);
+    });
+
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `palmgrens-garage-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function refreshData() {
     const btn = document.getElementById('refreshBtn');
-    btn.textContent = '↻ Laddar...';
     btn.disabled = true;
     transactions = await dbLoad();
     render();
-    btn.textContent = '↻ Uppdatera';
     btn.disabled = false;
   }
 
