@@ -339,9 +339,10 @@
 
   .period-label {
     font-size: 0.72rem;
-    color: rgba(255,255,255,0.6);
+    color: #666666;
     font-style: italic;
     font-weight: 400;
+    display: block;
   }
 
   @media (max-width: 800px) {
@@ -433,7 +434,7 @@
     <div class="login-title">Bokföring — Logga in</div>
     <div class="login-field">
       <label>Lösenord</label>
-      <input type="password" id="passwordInput" placeholder="Ange lösenord..." onkeydown="if(event.key==='Enter') checkPassword()" />
+      <input type="password" id="passwordInput" placeholder="Ange lösenord..." onkeydown="if(event.key==='Enter') checkPassword()" style="font-size:1.1rem;padding:16px;border:2px solid #aaaaaa;border-radius:4px;width:100%;background:#ffffff;color:#1a1a1a;" />
     </div>
     <button class="login-btn" onclick="checkPassword()">Logga in</button>
     <div class="login-error" id="loginError"></div>
@@ -498,7 +499,7 @@
         <div class="s-amount" id="totalExpense">0 kr</div>
       </div>
       <div class="summary-card s-balance" id="balanceCard">
-        <div class="s-label">Resultat <span class="period-label" id="periodLabel"></span></div>
+        <div class="s-label">Resultat<br><span class="period-label" id="periodLabel"></span></div>
         <div class="s-amount" id="balance">0 kr</div>
       </div>
     </div>
