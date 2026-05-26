@@ -350,8 +350,95 @@
     header { padding: 16px 20px; }
   }
 </style>
+
+<style>
+  .login-screen {
+    position: fixed;
+    inset: 0;
+    background: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    gap: 0;
+  }
+
+  .login-box {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 32px 28px;
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .login-logo img {
+    height: 90px;
+    width: auto;
+  }
+
+  .login-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #666;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .login-field { margin-bottom: 14px; }
+
+  .login-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 4px;
+    border: none;
+    background: #e3000b;
+    color: white;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
+  }
+
+  .login-btn:hover { background: #c0000a; }
+
+  .login-error {
+    color: #e3000b;
+    font-size: 0.82rem;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+</style>
 </head>
 <body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="logo.JPG" alt="Palmgrens Garage" />
+    </div>
+    <div class="login-title">Bokföring — Logga in</div>
+    <div class="login-field">
+      <label>Lösenord</label>
+      <input type="password" id="passwordInput" placeholder="Ange lösenord..." onkeydown="if(event.key==='Enter') checkPassword()" />
+    </div>
+    <button class="login-btn" onclick="checkPassword()">Logga in</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
 
 <header>
   <img class="logo" src="logo.JPG" alt="Palmgrens Garage" />
@@ -604,15 +691,48 @@
     btn.disabled = false;
   }
 
+  // ── Lösenord ────────────────────────────────────────────────────
+  async function checkPassword() {
+    const input = document.getElementById('passwordInput').value;
+    const errorEl = document.getElementById('loginError');
+    
+    if (!input) { errorEl.textContent = 'Ange ett lösenord.'; return; }
+    
+    errorEl.textContent = 'Kontrollerar...';
+    
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?key=eq.password&select=value`, { headers: HEADERS });
+      const data = await res.json();
+      
+      if (data && data[0] && data[0].value === input) {
+        sessionStorage.setItem('pg_auth', 'true');
+        document.getElementById('loginScreen').style.display = 'none';
+        init();
+      } else {
+        errorEl.textContent = 'Fel lösenord, försök igen.';
+        document.getElementById('passwordInput').value = '';
+      }
+    } catch (err) {
+      errorEl.textContent = 'Något gick fel, försök igen.';
+    }
+  }
+
   // ── Init ─────────────────────────────────────────────────────────
   async function init() {
+    // Kolla om redan inloggad
+    if (sessionStorage.getItem('pg_auth') !== 'true') return;
+    
     document.getElementById('date').value = todayStr();
     document.getElementById('txList').innerHTML = '<div class="empty">Laddar...</div>';
     transactions = await dbLoad();
     render();
   }
 
-  init();
+  // Kolla session vid start
+  if (sessionStorage.getItem('pg_auth') === 'true') {
+    document.getElementById('loginScreen').style.display = 'none';
+    init();
+  }
 </script>
 </body>
 </html>
