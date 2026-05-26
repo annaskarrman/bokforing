@@ -354,9 +354,7 @@
     .summary { grid-template-columns: 1fr 1fr; }
     header { padding: 16px 20px; }
   }
-</style>
 
-<style>
   .login-screen {
     position: fixed;
     inset: 0;
@@ -651,6 +649,7 @@
 
   // ── Rendera ──────────────────────────────────────────────────────
   function render() {
+    if (sessionStorage.getItem('pg_auth') !== 'true') return;
     const filtered = getFiltered();
     const from = document.getElementById('filterFrom').value;
     const to   = document.getElementById('filterTo').value;
