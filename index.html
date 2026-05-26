@@ -506,13 +506,10 @@
     <!-- TRANSACTION LIST -->
     <div class="list-panel">
       <div class="list-header" style="flex-direction:column;align-items:flex-start;gap:8px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
-          <span>Transaktioner</span>
-          <span id="txCount" style="font-size:0.75rem;color:rgba(255,255,255,0.75);font-weight:400;">0 poster</span>
-        </div>
+        <span>Transaktioner: <span id="txCount">0</span></span>
         <div style="display:flex;gap:8px;">
-          <button class="reset-btn" onclick="refreshData()" id="refreshBtn" style="padding:6px 12px;font-size:0.75rem;color:white;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);">↻ Uppdatera</button>
-          <button class="reset-btn" onclick="exportCSV()" style="padding:6px 12px;font-size:0.75rem;color:white;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);">⬇ Exportera</button>
+          <button class="reset-btn" onclick="refreshData()" id="refreshBtn" title="Uppdatera" style="padding:6px 14px;font-size:1.2rem;color:white;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);">🔄</button>
+          <button class="reset-btn" onclick="exportCSV()" title="Exportera till Excel" style="padding:6px 14px;font-size:1rem;font-weight:900;color:white;border-color:rgba(255,255,255,0.5);background:#1d6f42;font-family:Arial,sans-serif;letter-spacing:-1px;">X</button>
         </div>
       </div>
       <div id="txList"></div>
@@ -658,7 +655,7 @@
     document.getElementById('totalIncome').textContent  = fmt(incomeTotal);
     document.getElementById('totalExpense').textContent = fmt(expenseTotal);
     document.getElementById('balance').textContent      = (balance >= 0 ? '+' : '') + fmt(balance);
-    document.getElementById('txCount').textContent      = filtered.length + ' poster';
+    document.getElementById('txCount').textContent = filtered.length;
 
     let periodStr = (!from && !to) ? 'innevarande år'
       : `${from ? formatDate(from) : '–'} → ${to ? formatDate(to) : '–'}`;
