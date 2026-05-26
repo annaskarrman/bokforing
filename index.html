@@ -507,9 +507,10 @@
     <div class="list-panel">
       <div class="list-header">
         <span>Transaktioner</span>
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
           <span id="txCount">0 poster</span>
-          <button class="reset-btn" onclick="refreshData()" id="refreshBtn" style="padding:6px 12px;font-size:0.75rem;">↻ Uppdatera</button>
+          <button class="reset-btn" onclick="refreshData()" id="refreshBtn" style="padding:6px 12px;font-size:0.75rem;color:white;border-color:rgba(255,255,255,0.3);">↻ Uppdatera</button>
+          <button class="reset-btn" onclick="exportCSV()" style="padding:6px 12px;font-size:0.75rem;color:white;border-color:rgba(255,255,255,0.3);">⬇ Exportera</button>
         </div>
       </div>
       <div id="txList"></div>
@@ -679,6 +680,31 @@
         <button class="del-btn" onclick="deleteTransaction(${t.id})" title="Ta bort">×</button>
       </div>
     `).join('');
+  }
+
+  function exportCSV() {
+    if (transactions.length === 0) { alert('Inga transaktioner att exportera.'); return; }
+
+    const rows = [['Datum', 'Typ', 'Beskrivning', 'Belopp (kr)']];
+    const sorted = [...transactions].sort((a, b) => a.tx_date.localeCompare(b.tx_date));
+
+    sorted.forEach(t => {
+      rows.push([
+        t.tx_date.slice(0, 10),
+        t.type === 'income' ? 'Inkomst' : 'Utgift',
+        t.description,
+        parseFloat(t.amount).toFixed(2).replace('.', ',')
+      ]);
+    });
+
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `palmgrens-garage-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function refreshData() {
