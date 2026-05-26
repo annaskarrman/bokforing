@@ -506,9 +506,11 @@
     <!-- TRANSACTION LIST -->
     <div class="list-panel">
       <div class="list-header">
-        <span>Transaktioner</span>
+        <div>
+          <span>Transaktioner</span><br>
+          <span id="txCount" style="font-size:0.75rem;color:rgba(255,255,255,0.75);font-weight:400;letter-spacing:0;">0 poster</span>
+        </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <span id="txCount">0 poster</span>
           <button class="reset-btn" onclick="refreshData()" id="refreshBtn" style="padding:6px 12px;font-size:0.75rem;color:white;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);">↻ Uppdatera</button>
           <button class="reset-btn" onclick="exportCSV()" style="padding:6px 12px;font-size:0.75rem;color:white;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);">⬇ Exportera</button>
         </div>
